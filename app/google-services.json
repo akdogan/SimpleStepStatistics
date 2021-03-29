@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "624029900190",
+    "project_id": "my-fitness-statistics",
+    "storage_bucket": "my-fitness-statistics.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:624029900190:android:047a3d727ae25ba46a0a8f",
+        "android_client_info": {
+          "package_name": "com.akdogan.simplestepstatistics"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "624029900190-91mct19536hldr2bekmsfoje8f6rirmj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.akdogan.simplestepstatistics",
+            "certificate_hash": "fb583fd85431cd527fd7fd42d36bdd0a2dd0b9ac"
+          }
+        },
+        {
+          "client_id": "624029900190-2rmr386opi0bm8esjkljtqlkn72vib1v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZOrA80Ema9EoqxHBHn4n6ge9myb0Er_c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "624029900190-2rmr386opi0bm8esjkljtqlkn72vib1v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

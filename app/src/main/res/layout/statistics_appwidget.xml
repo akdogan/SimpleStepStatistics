@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widget_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/ThemeOverlay.SimpleStepStatistics.AppWidgetContainer"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/widget_progress_image_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/text_margin_widget"
+        android:layout_gravity="center_horizontal"/>
+
+
+
+
+
+</LinearLayout>
+
+<!--
+<TextView
+        android:id="@+id/debug_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:textStyle="bold|italic"
+        android:layout_margin="4dp"
+        android:layout_gravity="center_horizontal"
+        android:text="TESTTEXT"/>
+<TextView
+        android:id="@+id/widget_text_view_days_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin_widget"
+        android:textColor="?attr/appWidgetTextColor"
+        android:textSize="@dimen/text_size_widget"
+        android:text="Mo 20.02. \t\t\t 2.000 \n Tu 21.02. \t\t\t 7.534 \n We 22.02. \t\t\t 8.367"
+        tools:text="Mo 20.02. \t\t\t 2.000 \n Tu 21.02. \t\t\t 7.534 \n We 22.02. \t\t\t 8.367" />
+
+    <TextView
+        android:id="@+id/widget_text_view_stats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin_widget"
+        android:textColor="?attr/appWidgetTextColor"
+        android:textSize="@dimen/text_size_widget"
+        android:text="Steps left today to be on track: 340\nSteps required each day: 500"
+        tools:text="Steps left today to be on track: 340\nSteps required each day: 500" />
+-->

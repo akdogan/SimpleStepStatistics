@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Simple Step Statistics</string>
+    <string name="total_goal">Total: %,d / %,d</string>
+    <string name="one_day">%ta %td.%tm \t\t\t %,d</string>
+    <string name="today_break_even">Steps left today to be on track: %d</string>
+    <string name="steps_left_per_day">Steps required each day: %d</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+    <string name="num_format">%,d</string>
+</resources>
