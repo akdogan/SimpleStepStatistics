@@ -1,8 +1,13 @@
 <resources>
+    <!-- AppWidgetAttrs not used, could be removed maybe?-->
     <declare-styleable name="AppWidgetAttrs">
         <attr name="appWidgetBackgroundColor" format="color" />
         <attr name="appWidgetTextColor" format="color" />
     </declare-styleable>
-</resources>
 
-<!-- should be changed, instead use progressColor / CustomBackgroundColor / goalColor -->
+    <declare-styleable name="StepProgressView">
+        <attr name="progressColor" format="color" />
+        <attr name="goalColor" format="color" />
+        <attr name="circleBackgroundColor" format="color" />
+    </declare-styleable>
+</resources>

@@ -4,11 +4,11 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import androidx.core.content.withStyledAttributes
 import com.akdogan.simplestepstatistics.R
 import kotlin.math.abs
 
@@ -20,6 +20,8 @@ class StepProgressView @JvmOverloads constructor(
 
     companion object {
         private const val startAngle = 270f
+
+        // Scaling Values
         private const val goalTextPaddingFactor = 0.163f
         private const val progressTextPaddingFactor = 0.036f
         private const val goalTextSizeFactor = 0.13f
@@ -27,7 +29,11 @@ class StepProgressView @JvmOverloads constructor(
         private const val goalWidthFactor = 0.0436f
         private const val progressWidthFactor = 0.0218f
         private const val viewPaddingFactor = 0.06f
-        // Make Colors also use theme default and customizable
+
+        // Default Fallback Colors
+        private const val goalColorDefault = Color.LTGRAY
+        private const val progressColorDefault = Color.DKGRAY
+        private const val circleBackgroundColorDefault = Color.WHITE
     }
 
     private var goal = 1
@@ -40,78 +46,91 @@ class StepProgressView @JvmOverloads constructor(
     private var rect = RectF(0f, 0f, 0f, 0f)
     private var rectBackground = RectF(0f, 0f, 0f, 0f)
 
-    // TODO: Use xml attributes for color settings
-    private lateinit var goalPaint: Paint
+    private var goalPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        color = goalColor
+    }
+
     private fun calcGoalPaint(size: Int) {
-        goalPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.STROKE
-            strokeWidth = size * goalWidthFactor
-            color = goalColor//resources.getColor(R.color.light_blue, null)
-        }
+        goalPaint.strokeWidth = size * goalWidthFactor
     }
 
-    private lateinit var progressPaint: Paint
+    private var progressPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        color = progressColor
+    }
+
     private fun calcProgressPaint(size: Int) {
-        progressPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.STROKE
-            strokeWidth = size * progressWidthFactor
-            color = progressColor//resources.getColor(R.color.dark_blue, null)
-        }
+        progressPaint.strokeWidth = size * progressWidthFactor
     }
 
-    private lateinit var progressTextPaint: Paint
+    private var progressTextPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.create("", Typeface.BOLD)
+        color = progressColor
+    }
+
     private fun calcProgressTextPaint(size: Int) {
-        progressTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            textAlign = Paint.Align.CENTER
-            textSize = size * progressTextSizeFactor
-            typeface = Typeface.create("", Typeface.BOLD)
-            color = progressColor//resources.getColor(R.color.dark_blue, null)
-        }
+        progressTextPaint.textSize = size * progressTextSizeFactor
     }
 
-    private lateinit var goalTextPaint: Paint
+    private var goalTextPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.create("", Typeface.BOLD)
+        color = goalColor
+    }
+
     private fun calcGoalTextPaint(size: Int) {
-        goalTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            textAlign = Paint.Align.CENTER
-            textSize = size * goalTextSizeFactor//goalTextSize//70.0f//55.0f
-            typeface = Typeface.create("", Typeface.BOLD)
-            color = goalColor//resources.getColor(R.color.light_blue, null)
+        goalTextPaint.textSize = size * goalTextSizeFactor
+    }
+
+    private var circleBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        color = circleBackgroundColor
+    }
+
+    init {
+        context.withStyledAttributes(attrs, R.styleable.StepProgressView) {
+            goalColor = getColor(
+                R.styleable.StepProgressView_goalColor,
+                getThemeColor(context, R.attr.colorPrimary, goalColorDefault)
+            )
+            progressColor = getColor(
+                R.styleable.StepProgressView_progressColor,
+                getThemeColor(context, R.attr.colorSecondary, progressColorDefault)
+            )
+            circleBackgroundColor = getColor(
+                R.styleable.StepProgressView_circleBackgroundColor,
+                getThemeColor(context, R.attr.colorSurface, circleBackgroundColorDefault)
+            )
+
         }
     }
 
-    private val solidBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        val col = getThemeColor(context, R.attr.colorSurface, Color.WHITE)
-        color = col
-    }
+    @ColorInt
+    var goalColor = 0
+        set(value) {
+            field = value
+            goalPaint.color = value
+            goalTextPaint.color = value
+            invalidate()
+        }
 
-    fun setProgressBackgroundColor(@ColorInt color: Int) {
-        solidBackgroundPaint.color = color
-    }
+    @ColorInt
+    var progressColor = 0
+        set(value) {
+            field = value
+            progressPaint.color = value
+            progressTextPaint.color = value
+        }
 
-    fun setProgressColor(@ColorInt color: Int) {
-        progressColor = color
-        progressPaint.color = color
-        progressTextPaint.color = color
-    }
+    @ColorInt
+    var circleBackgroundColor = 0
+        set(value) {
+            field = value
+            circleBackgroundPaint.color = value
+        }
 
-    fun setGoalColor(@ColorInt color: Int) {
-        goalColor = color
-        goalPaint.color = color
-        goalTextPaint.color = color
-    }
-
-    private var goalColor = getThemeColor(
-        context,
-        R.attr.colorPrimary,
-        Color.LTGRAY
-    )
-
-    private var progressColor = getThemeColor(
-        context,
-        R.attr.colorSecondary,
-        Color.BLACK
-    )
 
     @ColorInt
     private fun getThemeColor(
@@ -169,33 +188,30 @@ class StepProgressView @JvmOverloads constructor(
             textPaddingProgress = it * progressTextPaddingFactor
             viewPadding = it * viewPaddingFactor
 
-        // Calculating draw rectangles to take assymetric padding into account, scale to keep ratio
-                val left = ((availableWidth / 2) - (it / 2) + paddingLeft).toFloat()
-                val top = ((availableHeight / 2) - (it / 2) + paddingTop).toFloat()
-                val right = left + it
-                val bottom = top + it
-                rectBackground = RectF(
-                    left,
-                    top,
-                    right,
-                    bottom
-                )
-                rect = RectF(
-                    left + viewPadding,
-                    top + viewPadding,
-                    right - viewPadding,
-                    bottom - viewPadding
-                )
-
-
-            Log.i("VIEW SIZE", "RectPos is: $rect")
+            // Calculating draw rectangles to take assymetric padding into account, scale to keep ratio
+            val left = ((availableWidth / 2) - (it / 2) + paddingLeft).toFloat()
+            val top = ((availableHeight / 2) - (it / 2) + paddingTop).toFloat()
+            val right = left + it
+            val bottom = top + it
+            rectBackground = RectF(
+                left,
+                top,
+                right,
+                bottom
+            )
+            rect = RectF(
+                left + viewPadding,
+                top + viewPadding,
+                right - viewPadding,
+                bottom - viewPadding
+            )
         }
     }
 
 
     override fun onDraw(canvas: Canvas) {
         // Draw solid background
-        canvas.drawArc(rectBackground, startAngle, 360f, true, solidBackgroundPaint)
+        canvas.drawArc(rectBackground, startAngle, 360f, true, circleBackgroundPaint)
         // Draw Background Track (Goal)
         canvas.drawArc(rect, startAngle, 360f, false, goalPaint)
         // Draw Foreground Track (Progress)
@@ -203,8 +219,8 @@ class StepProgressView @JvmOverloads constructor(
         // Draw the labels
         // Calculate label x/y positions relative to the paintable rect to take padding and position
         // into account
-        val x = rectBackground.left + ( (rectBackground.right - rectBackground.left) / 2)
-        val y = rectBackground.top + ( (rectBackground.bottom - rectBackground.top) / 2)
+        val x = rectBackground.left + ((rectBackground.right - rectBackground.left) / 2)
+        val y = rectBackground.top + ((rectBackground.bottom - rectBackground.top) / 2)
         canvas.drawText(
             resources.getString(R.string.num_format, progress),
             x,
@@ -217,12 +233,7 @@ class StepProgressView @JvmOverloads constructor(
             (y + textPaddingGoal),
             goalTextPaint
         )
-
-
     }
-
-
-
 }
 
 fun StepProgressView.runAnimation(duration: Long = 1200) {

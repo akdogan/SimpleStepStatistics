@@ -16,4 +16,6 @@
     <color name="transparent_light_blue_900">#B201579B</color>
     <color name="progress_default_color">#4E67E3</color>
     <color name="goal_default_color">#50E1CB</color>
+    <color name="red">#FF0000</color>
+    <color name="green">#1AFF00</color>
 </resources>

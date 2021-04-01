@@ -8,13 +8,9 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.util.TypedValue
 import android.widget.RemoteViews
-import androidx.annotation.AttrRes
-import androidx.annotation.ColorInt
 import androidx.appcompat.view.ContextThemeWrapper
 import com.akdogan.simplestepstatistics.FALLBACK_WEEKLY_GOAL
 import com.akdogan.simplestepstatistics.R
@@ -32,7 +28,6 @@ class StatisticsAppWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         Log.i("WIDGET UPDATE", "onUpdate Called")
-        //enqueueWidgetUpdate(context)
         val callback = callBackCreator(context)
         GoogleFitCommunicator(context).accessGoogleFitStatic(callback)
 
@@ -45,7 +40,6 @@ class StatisticsAppWidgetProvider : AppWidgetProvider() {
         newOptions: Bundle?
     ) {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
-        //enqueueWidgetUpdate(context)
         val callback = callBackCreator(context)
         GoogleFitCommunicator(context).accessGoogleFitStatic(callback)
     }
@@ -78,7 +72,7 @@ internal fun callBackCreator(
     return {
         // Extract the required values
         val progress = it.getTotalStepCount()
-        // TODO Should be replaced with actual weekyl goal from sharedprefs
+        // TODO Should be replaced with actual weekly goal from sharedprefs
         val goal = FALLBACK_WEEKLY_GOAL
         // Get the Manager and all Widget Ids to update the views for each widget
         val manager = AppWidgetManager.getInstance(context)
@@ -126,31 +120,6 @@ fun drawCustomView(context: Context, goal: Int, progress: Int, size: Int): Bitma
     progressView.layout(0, 0, size, size)
     val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
 
-    val progressColor = retrieveThemeColor(
-        contextWrapper,
-        R.attr.colorSecondary,
-        context.resources.getColor(R.color.progress_default_color, null)
-    )
-    val goalColor = retrieveThemeColor(
-        contextWrapper,
-        R.attr.colorPrimary,
-        context.resources.getColor(R.color.goal_default_color, null)
-    )
-    progressView.setProgressBackgroundColor(retrieveThemeColor(contextWrapper, R.attr.colorSurface, Color.WHITE))
-    progressView.setGoalColor(goalColor)
-    progressView.setProgressColor(progressColor)
     progressView.draw(Canvas(bitmap))
     return bitmap
-}
-
-
-
-@ColorInt
-private fun retrieveThemeColor(context: Context, @AttrRes attr: Int, @ColorInt fallBack: Int): Int{
-    val typedVal = TypedValue()
-    return if (context.theme.resolveAttribute(attr, typedVal, true)){
-        typedVal.data
-    } else {
-        fallBack
-    }
 }
