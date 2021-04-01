@@ -4,17 +4,21 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.akdogan.simplestepstatistics.FALLBACK_DAYS_IN_PERIOD
+import com.akdogan.simplestepstatistics.FALLBACK_WEEKLY_GOAL
 import com.akdogan.simplestepstatistics.repository.GoogleFitCommunicator
 import com.akdogan.simplestepstatistics.repository.StepStatisticDay
 import com.akdogan.simplestepstatistics.repository.StepStatisticModel
 import com.akdogan.simplestepstatistics.widget.callBackCreator
 
-const val weeklyGoal = 60000
-const val daysInPeriod = 7
 const val TAG = "MainViewModel"
 
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
+    // TODO Should be taken from sharedPrefs later on
+    private var weeklyGoal = FALLBACK_WEEKLY_GOAL
+    private var daysInPeriod = FALLBACK_DAYS_IN_PERIOD
+
     private var statistics = StepStatisticModel(weeklyGoal, daysInPeriod)
     val goal = weeklyGoal
 

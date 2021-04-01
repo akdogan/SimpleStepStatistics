@@ -2,9 +2,9 @@ package com.akdogan.simplestepstatistics.repository
 
 import android.content.Context
 import android.util.Log
+import com.akdogan.simplestepstatistics.FALLBACK_DAYS_IN_PERIOD
+import com.akdogan.simplestepstatistics.FALLBACK_WEEKLY_GOAL
 import com.akdogan.simplestepstatistics.helper.DateHelper
-import com.akdogan.simplestepstatistics.ui.main.daysInPeriod
-import com.akdogan.simplestepstatistics.ui.main.weeklyGoal
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.fitness.Fitness
@@ -15,12 +15,15 @@ import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
 import java.util.concurrent.TimeUnit
 
-class GoogleFitCommunicator(private val context: Context) {
+class GoogleFitCommunicator(
+    private val context: Context,
+    private val weeklyGoal: Int = FALLBACK_WEEKLY_GOAL,
+    private val daysInPeriod: Int = FALLBACK_DAYS_IN_PERIOD
+    ) {
     val TAG = "GFit"
 
     /**
      * Checks if the application has access to Google fit for the defined statistics
-     * @param context Context
      * @return true if access is allowed, false if otherwise
      */
     fun checkFitAccess(): Boolean{
@@ -31,7 +34,6 @@ class GoogleFitCommunicator(private val context: Context) {
 
     /**
      * Fetch Data from Google Fit
-     * @param con Context
      * @param successFunction CallbackFunction that should be executed with the resultdata
      */
     fun accessGoogleFitStatic(
@@ -82,11 +84,18 @@ class GoogleFitCommunicator(private val context: Context) {
         // TODO Bug: If there are no steps in a day, an empty bucket is retrieved and the app crashes
         if (dataReadResult.buckets.isNotEmpty()) {
             for (bucket in dataReadResult.buckets) {
-                bucket.dataSets[0]?.dataPoints?.get(0)?.let{
+                bucket.dataSets.firstOrNull()?.let{
+                    it.dataPoints.firstOrNull()?.let{
+                        val date = it.getStartTime(TimeUnit.MILLISECONDS)
+                        val steps = it.getValue(it.dataType.fields[0]).asInt()
+                        statistics.addDay(date, steps)
+                    }
+                }
+                /*bucket.dataSets[0]?.dataPoints?.get(0)?.let{
                     val date = it.getStartTime(TimeUnit.MILLISECONDS)
                     val steps = it.getValue(it.dataType.fields[0]).asInt()
                     statistics.addDay(date, steps)
-                }
+                }*/
             }
         }
         return statistics

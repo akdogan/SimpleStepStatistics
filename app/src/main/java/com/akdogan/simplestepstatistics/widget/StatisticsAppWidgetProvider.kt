@@ -16,12 +16,12 @@ import android.widget.RemoteViews
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.view.ContextThemeWrapper
+import com.akdogan.simplestepstatistics.FALLBACK_WEEKLY_GOAL
 import com.akdogan.simplestepstatistics.R
-import com.akdogan.simplestepstatistics.StepProgressView
 import com.akdogan.simplestepstatistics.repository.GoogleFitCommunicator
 import com.akdogan.simplestepstatistics.repository.StepStatisticModel
+import com.akdogan.simplestepstatistics.ui.StepProgressView
 import com.akdogan.simplestepstatistics.ui.main.MainActivity
-import com.akdogan.simplestepstatistics.ui.main.weeklyGoal
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -78,7 +78,8 @@ internal fun callBackCreator(
     return {
         // Extract the required values
         val progress = it.getTotalStepCount()
-        val goal = weeklyGoal
+        // TODO Should be replaced with actual weekyl goal from sharedprefs
+        val goal = FALLBACK_WEEKLY_GOAL
         // Get the Manager and all Widget Ids to update the views for each widget
         val manager = AppWidgetManager.getInstance(context)
         manager.getAppWidgetIds(
@@ -147,28 +148,9 @@ fun drawCustomView(context: Context, goal: Int, progress: Int, size: Int): Bitma
 @ColorInt
 private fun retrieveThemeColor(context: Context, @AttrRes attr: Int, @ColorInt fallBack: Int): Int{
     val typedVal = TypedValue()
-    return if (context.theme.resolveAttribute(/*R.attr.colorSurface*/attr, typedVal, true)){
-        Log.d("COLOR THEME", "context bla returned true in app widget provider")
+    return if (context.theme.resolveAttribute(attr, typedVal, true)){
         typedVal.data
     } else {
         fallBack
     }
 }
-
-/*views.setTextViewText(
-            R.id.widget_text_view_days_list, formatDays(
-                it.getDaysAsList(),
-                res
-            )
-        )
-        views.setTextViewText(
-            R.id.widget_text_view_stats, formatStats(
-                it.getRequiredTodayForBreakEven(),
-                it.getRequiredPerDayUpcoming(),
-                res
-            )
-        )*/
-/*views.setTextViewText(
-    R.id.debug_text_view,
-    DateHelper.timeToDateTimeString(System.currentTimeMillis())
-)*/

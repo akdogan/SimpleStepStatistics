@@ -16,9 +16,10 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <com.akdogan.simplestepstatistics.StepProgressView
+            <com.akdogan.simplestepstatistics.ui.StepProgressView
+                android:padding="10dp"
                 android:id="@+id/step_progress_view"
-                android:layout_width="200dp"
+                android:layout_width="300dp"
                 android:layout_height="200dp"
                 android:visibility="invisible"
                 android:layout_marginTop="@dimen/text_margin_inapp"

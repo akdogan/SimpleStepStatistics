@@ -1,4 +1,4 @@
-package com.akdogan.simplestepstatistics
+package com.akdogan.simplestepstatistics.ui
 
 import android.animation.ObjectAnimator
 import android.content.Context
@@ -9,6 +9,7 @@ import android.util.TypedValue
 import android.view.View
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import com.akdogan.simplestepstatistics.R
 import kotlin.math.abs
 
 class StepProgressView @JvmOverloads constructor(
@@ -25,7 +26,7 @@ class StepProgressView @JvmOverloads constructor(
         private const val progressTextSizeFactor = 0.18f
         private const val goalWidthFactor = 0.0436f
         private const val progressWidthFactor = 0.0218f
-        private const val viewPaddingFactor = 0.06f//0.022f
+        private const val viewPaddingFactor = 0.06f
         // Make Colors also use theme default and customizable
     }
 
@@ -84,17 +85,17 @@ class StepProgressView @JvmOverloads constructor(
         color = col
     }
 
-    fun setProgressBackgroundColor(@ColorInt color: Int){
+    fun setProgressBackgroundColor(@ColorInt color: Int) {
         solidBackgroundPaint.color = color
     }
 
-    fun setProgressColor(@ColorInt color: Int){
+    fun setProgressColor(@ColorInt color: Int) {
         progressColor = color
         progressPaint.color = color
         progressTextPaint.color = color
     }
 
-    fun setGoalColor(@ColorInt color: Int){
+    fun setGoalColor(@ColorInt color: Int) {
         goalColor = color
         goalPaint.color = color
         goalTextPaint.color = color
@@ -117,9 +118,9 @@ class StepProgressView @JvmOverloads constructor(
         context: Context,
         @AttrRes attr: Int,
         @ColorInt default: Int
-    ): Int{
+    ): Int {
         val typedVal = TypedValue()
-        return if (context.theme.resolveAttribute(attr, typedVal, true)){
+        return if (context.theme.resolveAttribute(attr, typedVal, true)) {
             typedVal.data
         } else {
             default
@@ -131,7 +132,7 @@ class StepProgressView @JvmOverloads constructor(
      * Value that corresponds to 100% / a full circle
      * @param value must be greater than 0, otherwise the absolute value is used
      */
-    fun setGoal(value: Int){
+    fun setGoal(value: Int) {
         goal = if (value > 0) value else abs(value)
         calculateSweepAngle()
         invalidate()
@@ -141,23 +142,25 @@ class StepProgressView @JvmOverloads constructor(
      * Value of the current Progress. If the Progress is more than the goal, a full circle is drawn
      * @param value mut be greater than 0. If the value past is lesser, then 0 will be used instead
      */
-    fun setProgress(value: Int){
+    fun setProgress(value: Int) {
         progress = if (value < 0) 0 else value
         calculateSweepAngle()
         invalidate()
     }
 
-    fun getProgress(): Int =  progress
+    fun getProgress(): Int = progress
 
 
-
-    private fun calculateSweepAngle(){
-        sweepAngle =  360.0f * (progress.toFloat() / goal.toFloat())
+    private fun calculateSweepAngle() {
+        sweepAngle = 360.0f * (progress.toFloat() / goal.toFloat())
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         calculateSweepAngle()
-        kotlin.math.min(w, h).let {
+        val availableWidth = w - paddingStart - paddingEnd
+        val availableHeight = h - paddingTop - paddingBottom
+        // Calculating sizes with the available view size after taking system padding into account
+        kotlin.math.min(availableWidth, availableHeight).let {
             calcProgressPaint(it)
             calcGoalPaint(it)
             calcProgressTextPaint(it)
@@ -166,20 +169,24 @@ class StepProgressView @JvmOverloads constructor(
             textPaddingProgress = it * progressTextPaddingFactor
             viewPadding = it * viewPaddingFactor
 
-            (it / 2.0f).let{ halfSize ->
+        // Calculating draw rectangles to take assymetric padding into account, scale to keep ratio
+                val left = ((availableWidth / 2) - (it / 2) + paddingLeft).toFloat()
+                val top = ((availableHeight / 2) - (it / 2) + paddingTop).toFloat()
+                val right = left + it
+                val bottom = top + it
                 rectBackground = RectF(
-                    (w / 2.0f) - halfSize,
-                    (h / 2.0f) - halfSize,
-                    (w / 2.0f) + halfSize,
-                    (h / 2.0f) + halfSize
+                    left,
+                    top,
+                    right,
+                    bottom
                 )
                 rect = RectF(
-                    (w / 2.0f) - halfSize + viewPadding,
-                    (h / 2.0f) - halfSize + viewPadding,
-                    (w / 2.0f) + halfSize - viewPadding,
-                    (h / 2.0f) + halfSize - viewPadding
+                    left + viewPadding,
+                    top + viewPadding,
+                    right - viewPadding,
+                    bottom - viewPadding
                 )
-            }
+
 
             Log.i("VIEW SIZE", "RectPos is: $rect")
         }
@@ -187,7 +194,6 @@ class StepProgressView @JvmOverloads constructor(
 
 
     override fun onDraw(canvas: Canvas) {
-
         // Draw solid background
         canvas.drawArc(rectBackground, startAngle, 360f, true, solidBackgroundPaint)
         // Draw Background Track (Goal)
@@ -195,16 +201,31 @@ class StepProgressView @JvmOverloads constructor(
         // Draw Foreground Track (Progress)
         canvas.drawArc(rect, startAngle, sweepAngle, false, progressPaint)
         // Draw the labels
-
-        canvas.drawText(resources.getString(R.string.num_format, progress), (width / 2).toFloat(), ((height / 2) - textPaddingProgress), progressTextPaint )
-        canvas.drawText(resources.getString(R.string.num_format, goal), (width / 2).toFloat(), ((height / 2) + textPaddingGoal), goalTextPaint )
+        // Calculate label x/y positions relative to the paintable rect to take padding and position
+        // into account
+        val x = rectBackground.left + ( (rectBackground.right - rectBackground.left) / 2)
+        val y = rectBackground.top + ( (rectBackground.bottom - rectBackground.top) / 2)
+        canvas.drawText(
+            resources.getString(R.string.num_format, progress),
+            x,
+            (y - textPaddingProgress),
+            progressTextPaint
+        )
+        canvas.drawText(
+            resources.getString(R.string.num_format, goal),
+            x,
+            (y + textPaddingGoal),
+            goalTextPaint
+        )
 
 
     }
 
+
+
 }
 
-fun StepProgressView.runAnimation(duration: Long = 1200){
+fun StepProgressView.runAnimation(duration: Long = 1200) {
     val animator = ObjectAnimator.ofInt(
         this,
         "progress",

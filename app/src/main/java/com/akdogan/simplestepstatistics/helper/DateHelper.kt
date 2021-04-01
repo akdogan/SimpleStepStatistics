@@ -77,7 +77,7 @@ object DateHelper {
         val targetTime = TimeUnit.MILLISECONDS.convert(time, tu)
         val date = Date(time)
         val formatter: DateFormat = SimpleDateFormat(pattern)
-        formatter.timeZone = TimeZone.getDefault()//getTimeZone("UTC")
+        formatter.timeZone = TimeZone.getDefault()
         return formatter.format(date)
     }
 

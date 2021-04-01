@@ -12,19 +12,20 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.akdogan.simplestepstatistics.R
-import com.akdogan.simplestepstatistics.StepProgressView
 import com.akdogan.simplestepstatistics.helper.formatDays
 import com.akdogan.simplestepstatistics.helper.formatStats
 import com.akdogan.simplestepstatistics.repository.GoogleFitCommunicator
-import com.akdogan.simplestepstatistics.runAnimation
+import com.akdogan.simplestepstatistics.ui.StepProgressView
+import com.akdogan.simplestepstatistics.ui.runAnimation
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 
 class MainFragment : Fragment() {
-    private val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 12345
-    private val TAG = "MainFragment"
+
 
     companion object {
         fun newInstance() = MainFragment()
+        private const val GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 12345
+        private const val TAG = "MainFragment"
     }
 
     private lateinit var viewModel: MainViewModel
@@ -88,8 +89,6 @@ class MainFragment : Fragment() {
                 }
             }
         })
-
-        //val statsView = view.findViewById<StepProgressView>(R.id.step_progress_view)
         //statsView.setBackgroundColor(retrieveThemeColor(requireActivity()))
 
     }
