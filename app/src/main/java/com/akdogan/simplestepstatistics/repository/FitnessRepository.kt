@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.akdogan.simplestepstatistics.FALLBACK_DAYS_IN_PERIOD
 import com.akdogan.simplestepstatistics.FALLBACK_WEEKLY_GOAL
+import com.akdogan.simplestepstatistics.START_DAY_OF_WEEK_FOR_TRACKING
 import com.akdogan.simplestepstatistics.helper.DateHelper
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -19,14 +20,15 @@ class GoogleFitCommunicator(
     private val context: Context,
     private val weeklyGoal: Int = FALLBACK_WEEKLY_GOAL,
     private val daysInPeriod: Int = FALLBACK_DAYS_IN_PERIOD
-    ) {
+) {
+
     val TAG = "GFit"
 
     /**
      * Checks if the application has access to Google fit for the defined statistics
      * @return true if access is allowed, false if otherwise
      */
-    fun checkFitAccess(): Boolean{
+    fun checkFitAccess(): Boolean {
         val options = getFitnessOptions()
         val gAccount = getGoogleAccountStatic(options)
         return (GoogleSignIn.hasPermissions(gAccount, options))
@@ -39,7 +41,7 @@ class GoogleFitCommunicator(
     fun accessGoogleFitStatic(
         successFunction: (StepStatisticModel) -> Unit,
         completeFunction: () -> Unit = {}
-    ){
+    ) {
         Log.i(TAG, "access granted")
         val readRequest = createFitnessDataRequestStatic()
 
@@ -50,7 +52,7 @@ class GoogleFitCommunicator(
                 // When parsing fails, sample data is used instead
                 val result = try {
                     parseGoogleFitResponseStatic(dataReadResponse)
-                } catch (e: Exception){
+                } catch (e: Exception) {
                     Log.e("GOOGLE FIT PARSER", e.stackTraceToString())
                     createSampleData(weeklyGoal, daysInPeriod)
                 }
@@ -65,7 +67,7 @@ class GoogleFitCommunicator(
 
     }
 
-    fun getFitnessOptions(): FitnessOptions{
+    fun getFitnessOptions(): FitnessOptions {
         return FitnessOptions.builder()
             .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -79,13 +81,13 @@ class GoogleFitCommunicator(
     }
 
 
-    private fun parseGoogleFitResponseStatic(dataReadResult: DataReadResponse): StepStatisticModel{
+    private fun parseGoogleFitResponseStatic(dataReadResult: DataReadResponse): StepStatisticModel {
         val statistics = StepStatisticModel(weeklyGoal, daysInPeriod)
         // TODO Bug: If there are no steps in a day, an empty bucket is retrieved and the app crashes
         if (dataReadResult.buckets.isNotEmpty()) {
             for (bucket in dataReadResult.buckets) {
-                bucket.dataSets.firstOrNull()?.let{
-                    it.dataPoints.firstOrNull()?.let{
+                bucket.dataSets.firstOrNull()?.let {
+                    it.dataPoints.firstOrNull()?.let {
                         val date = it.getStartTime(TimeUnit.MILLISECONDS)
                         val steps = it.getValue(it.dataType.fields[0]).asInt()
                         statistics.addDay(date, steps)
@@ -101,11 +103,32 @@ class GoogleFitCommunicator(
         return statistics
     }
 
+//    private fun createFitnessDataBicycleRequest(): DataReadRequest {
+//        val endTime = DateHelper.getNow()
+//        val startTime = DateHelper.getStartOfSpecifiedDay(6)
+//        Log.i(
+//            TAG, "Range Start: ${DateHelper.timeToDateTimeString(startTime, TimeUnit.SECONDS)}"
+//        )
+//        Log.i(
+//            TAG,
+//            "Range End: ${DateHelper.timeToDateTimeString(endTime, TimeUnit.SECONDS)}"
+//        )
+//
+//        val dataSource = DataSource.Builder()
+//            .setAppPackageName("com.google.android.gms")
+//            .setDataType(DataType.AGGREGATE_DISTANCE_DELTA)
+//    }
+
     private fun createFitnessDataRequestStatic(): DataReadRequest {
         val endTime = DateHelper.getNow()
-        val startTime = DateHelper.getStartOfSpecifiedDay(3)
-        Log.i(com.akdogan.simplestepstatistics.ui.main.TAG, "Range Start: ${DateHelper.timeToDateTimeString(startTime, TimeUnit.SECONDS)}")
-        Log.i(com.akdogan.simplestepstatistics.ui.main.TAG, "Range End: ${DateHelper.timeToDateTimeString(endTime, TimeUnit.SECONDS)}")
+        val startTime = DateHelper.getStartOfSpecifiedDay(START_DAY_OF_WEEK_FOR_TRACKING)
+        Log.i(
+            TAG, "Range Start: ${DateHelper.timeToDateTimeString(startTime, TimeUnit.SECONDS)}"
+        )
+        Log.i(
+            TAG,
+            "Range End: ${DateHelper.timeToDateTimeString(endTime, TimeUnit.SECONDS)}"
+        )
 
         val dataSource = DataSource.Builder()
             .setAppPackageName("com.google.android.gms")

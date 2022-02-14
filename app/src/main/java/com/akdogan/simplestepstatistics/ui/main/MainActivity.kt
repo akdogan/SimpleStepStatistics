@@ -3,6 +3,7 @@ package com.akdogan.simplestepstatistics.ui.main
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.akdogan.simplestepstatistics.R
+import com.akdogan.simplestepstatistics.ui.main.settings.SettingsFragment
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -15,6 +16,26 @@ class MainActivity : AppCompatActivity() {
                     .replace(R.id.container, MainFragment.newInstance())
                     .commitNow()
         }
+    }
+
+//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+//        val inflater: MenuInflater = menuInflater
+//        inflater.inflate(R.menu.menu, menu)
+//        return true
+//    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        return when(item.itemId) {
+//            R.id.settings -> navigateToSettings()
+//            else ->super.onOptionsItemSelected(item)
+//        }
+//    }
+
+    private fun navigateToSettings(): Boolean {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, SettingsFragment.newInstance())
+            .commitNow()
+        return true
     }
 }
 
