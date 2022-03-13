@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.akdogan.simplestepstatistics"
-        minSdkVersion 26
+        minSdkVersion 28
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -33,6 +33,9 @@ android {
     dependenciesInfo {
         includeInApk true
         includeInBundle true
+    }
+    buildFeatures {
+        viewBinding = true
     }
 }
 

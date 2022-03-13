@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.akdogan.simplestepstatistics.FALLBACK_DAYS_IN_PERIOD
 import com.akdogan.simplestepstatistics.FALLBACK_WEEKLY_GOAL
-import com.akdogan.simplestepstatistics.START_DAY_OF_WEEK_FOR_TRACKING
 import com.akdogan.simplestepstatistics.helper.DateHelper
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -39,11 +38,12 @@ class GoogleFitCommunicator(
      * @param successFunction CallbackFunction that should be executed with the resultdata
      */
     fun accessGoogleFitStatic(
+        startDayOfWeek: Int,
         successFunction: (StepStatisticModel) -> Unit,
         completeFunction: () -> Unit = {}
     ) {
         Log.i(TAG, "access granted")
-        val readRequest = createFitnessDataRequestStatic()
+        val readRequest = createFitnessDataRequestStatic(startDayOfWeek)
 
         // Invoke the History API to fetch the data with the query
         Fitness.getHistoryClient(context, getGoogleAccountStatic())
@@ -119,9 +119,9 @@ class GoogleFitCommunicator(
 //            .setDataType(DataType.AGGREGATE_DISTANCE_DELTA)
 //    }
 
-    private fun createFitnessDataRequestStatic(): DataReadRequest {
+    private fun createFitnessDataRequestStatic(startDayOfWeek: Int): DataReadRequest {
         val endTime = DateHelper.getNow()
-        val startTime = DateHelper.getStartOfSpecifiedDay(START_DAY_OF_WEEK_FOR_TRACKING)
+        val startTime = DateHelper.getStartOfSpecifiedDay(startDayOfWeek)
         Log.i(
             TAG, "Range Start: ${DateHelper.timeToDateTimeString(startTime, TimeUnit.SECONDS)}"
         )

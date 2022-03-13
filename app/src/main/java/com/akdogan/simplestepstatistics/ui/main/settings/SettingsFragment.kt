@@ -1,25 +1,17 @@
 package com.akdogan.simplestepstatistics.ui.main.settings
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStore
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.akdogan.simplestepstatistics.R
+import com.akdogan.simplestepstatistics.databinding.FragmentSettingsBinding
 import com.akdogan.simplestepstatistics.repository.DataStoreRepository
+import com.akdogan.simplestepstatistics.ui.main.settings.selectionlist.DayOfWeekSelectionItem
+import com.akdogan.simplestepstatistics.ui.main.settings.selectionlist.DayOfWeekSelectionListAdapter
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-
 
 /**
  * A simple [Fragment] subclass.
@@ -28,43 +20,61 @@ import kotlinx.coroutines.launch
  */
 class SettingsFragment : Fragment() {
 
-    val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
-
-    private var currentDay = 1
+    private var binding: FragmentSettingsBinding? = null
+    private var dataList: List<DayOfWeekSelectionItem>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_settings, container, false)
+        binding = FragmentSettingsBinding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val repository = DataStoreRepository()
 
-        view.findViewById<Button>(R.id.test_button).setOnClickListener {
-            var day = currentDay
-            day++
-            if (day > 7) day = 1
-            viewLifecycleOwner.lifecycleScope.launch {
-                repository.setData(
-                    requireContext(),
-                    day
-                )
+        dataList = generateDaysList()
+
+        val adapter = DayOfWeekSelectionListAdapter(){
+            viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+                DataStoreRepository.setData(requireContext(), it.number)
             }
         }
+
+        binding?.daySelection?.adapter = adapter
 
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            repository.getDataFLow(requireContext()).collect {
-                view.findViewById<TextView>(R.id.test_textview).text = "From Settings: $it"
-                currentDay = it
+            DataStoreRepository.getDataFLow(requireContext()).collect { dataRepoDayNumber ->
+                Toast.makeText(activity, "DataStore changed to $dataRepoDayNumber", Toast.LENGTH_LONG).show()
+
+                var list = dataList ?: return@collect
+                list = list.map {
+                    if (it.day.number == dataRepoDayNumber){
+                        it.copy(selected = true)
+                    } else {
+                        it.copy(selected = false)
+                    }
+                }
+                dataList = list
+                adapter.submitList(list)
             }
         }
+    }
 
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
+    }
 
+    private fun generateDaysList(): List<DayOfWeekSelectionItem> {
+        val result = mutableListOf<DayOfWeekSelectionItem>()
+        DayOfWeek.values().forEach {
+            result.add(DayOfWeekSelectionItem(it))
+        }
+        return result
     }
 
     companion object {

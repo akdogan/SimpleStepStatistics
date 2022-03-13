@@ -9,7 +9,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class DataStoreRepository {
+object DataStoreRepository {
 
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -33,7 +33,7 @@ class DataStoreRepository {
         }
     }
 
-    companion object {
-        private const val KEY_START_DAY_OF_WEEK = "start_day_of_week"
-    }
+
+    private const val KEY_START_DAY_OF_WEEK = "start_day_of_week"
+
 }

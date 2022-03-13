@@ -1,6 +1,9 @@
 package com.akdogan.simplestepstatistics.ui.main
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.akdogan.simplestepstatistics.R
 import com.akdogan.simplestepstatistics.ui.main.settings.SettingsFragment
@@ -18,18 +21,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-//        val inflater: MenuInflater = menuInflater
-//        inflater.inflate(R.menu.menu, menu)
-//        return true
-//    }
-//
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        return when(item.itemId) {
-//            R.id.settings -> navigateToSettings()
-//            else ->super.onOptionsItemSelected(item)
-//        }
-//    }
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId) {
+            R.id.settings -> navigateToSettings()
+            else ->super.onOptionsItemSelected(item)
+        }
+    }
 
     private fun navigateToSettings(): Boolean {
         supportFragmentManager.beginTransaction()
