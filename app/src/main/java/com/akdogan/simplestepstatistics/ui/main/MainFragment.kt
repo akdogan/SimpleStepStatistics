@@ -10,14 +10,17 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.akdogan.simplestepstatistics.R
 import com.akdogan.simplestepstatistics.helper.formatDays
 import com.akdogan.simplestepstatistics.helper.formatStats
+import com.akdogan.simplestepstatistics.repository.DataStoreRepository
 import com.akdogan.simplestepstatistics.repository.GoogleFitCommunicator
 import com.akdogan.simplestepstatistics.ui.StepProgressView
 import com.akdogan.simplestepstatistics.ui.runAnimation
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import kotlinx.coroutines.flow.collect
 
 class MainFragment : Fragment() {
 
@@ -29,6 +32,8 @@ class MainFragment : Fragment() {
     }
 
     private lateinit var viewModel: MainViewModel
+
+    private var startDayOfWeek: Int = 1
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,12 +58,19 @@ class MainFragment : Fragment() {
             this,
             ViewModelProvider.AndroidViewModelFactory(requireActivity().application)
         ).get(MainViewModel::class.java)
+
+        lifecycleScope.launchWhenResumed {
+            DataStoreRepository.getDataFLow(requireContext()).collect {
+                startDayOfWeek = it
+                requestOauthFit(it)
+            }
+        }
         // Start Google Fit Auth Flow
-        requestOauthFit()
+        // requestOauthFit()
         // Initialize SwipeRefresh Layout
         val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.swipe_refresh_layout)
         swipeRefreshLayout.setOnRefreshListener {
-            getGoogleFitData()
+            getGoogleFitData(startDayOfWeek)
         }
 
 
@@ -95,7 +107,7 @@ class MainFragment : Fragment() {
 
 
 
-    private fun requestOauthFit() {
+    private fun requestOauthFit(startDayOfWeek: Int) {
         GoogleFitCommunicator(requireContext()).also {
             if (!it.checkFitAccess()) {
                 Log.i(TAG, "Before signin reqest")
@@ -107,7 +119,7 @@ class MainFragment : Fragment() {
                 )
                 Log.i(TAG, "After signin reqest")
             } else {
-                getGoogleFitData()
+                getGoogleFitData(startDayOfWeek)
             }
         }
     }
@@ -120,7 +132,7 @@ class MainFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         when (resultCode) {
             Activity.RESULT_OK -> when (requestCode) {
-                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE -> getGoogleFitData()
+                GOOGLE_FIT_PERMISSIONS_REQUEST_CODE -> getGoogleFitData(startDayOfWeek)
                 else -> {
                     Log.i(TAG, "Result not from Fit")
                 }
@@ -132,7 +144,7 @@ class MainFragment : Fragment() {
     }
 
 
-    private fun getGoogleFitData() {
-        viewModel.getData()
+    private fun getGoogleFitData(startDayOfWeek: Int) {
+        viewModel.getData(startDayOfWeek)
     }
 }

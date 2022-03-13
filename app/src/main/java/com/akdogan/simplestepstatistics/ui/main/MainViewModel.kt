@@ -30,8 +30,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     // account verification needed
 
-    fun getData() {
+    fun getData(startDayOfWeek: Int) {
         googleFitCommunicator.accessGoogleFitStatic(
+            startDayOfWeek,
             successFunction = {
                 statistics = it
                 _loadingDone.value = true

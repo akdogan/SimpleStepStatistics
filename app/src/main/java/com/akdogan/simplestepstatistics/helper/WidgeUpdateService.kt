@@ -24,7 +24,7 @@ class WidgetUpdateService : JobIntentService() {
         if (intent.action == ACTION_UPDATE_WIDGET) {
             //val res = resources
             val callback = callBackCreator(this)
-            GoogleFitCommunicator(this).accessGoogleFitStatic(callback)
+            GoogleFitCommunicator(this, 0).accessGoogleFitStatic(0,callback)
         }
     }
 }

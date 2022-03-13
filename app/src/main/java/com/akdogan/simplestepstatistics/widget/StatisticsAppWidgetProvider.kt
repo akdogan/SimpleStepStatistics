@@ -29,7 +29,7 @@ class StatisticsAppWidgetProvider : AppWidgetProvider() {
     ) {
         Log.i("WIDGET UPDATE", "onUpdate Called")
         val callback = callBackCreator(context)
-        GoogleFitCommunicator(context).accessGoogleFitStatic(callback)
+        GoogleFitCommunicator(context).accessGoogleFitStatic(0,callback)
 
     }
 
@@ -41,7 +41,7 @@ class StatisticsAppWidgetProvider : AppWidgetProvider() {
     ) {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
         val callback = callBackCreator(context)
-        GoogleFitCommunicator(context).accessGoogleFitStatic(callback)
+        GoogleFitCommunicator(context).accessGoogleFitStatic(0,callback)
     }
 
 }
