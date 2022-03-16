@@ -7,9 +7,10 @@ import com.akdogan.simplestepstatistics.repository.StepStatisticDay
 import com.google.android.gms.fitness.data.DataSet
 import com.google.android.gms.fitness.result.DataReadResponse
 import java.util.concurrent.TimeUnit
+import kotlin.math.round
 
 
-
+fun Float.toKmRounded() = round(this / 1000)
 
 
 fun formatTotalWithGoal(goal: Int, total: Int, res: Resources): String{

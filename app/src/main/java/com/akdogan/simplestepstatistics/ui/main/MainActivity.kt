@@ -16,8 +16,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, MainFragment.newInstance())
-                    .commitNow()
+                .replace(R.id.container, MainFragment.newInstance())
+                .setReorderingAllowed(true)
+                .addToBackStack(MainFragment::class.java.simpleName)
+                .commit()
         }
     }
 
@@ -28,24 +30,32 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when(item.itemId) {
+        return when (item.itemId) {
             R.id.settings -> navigateToSettings()
-            else ->super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
     private fun navigateToSettings(): Boolean {
         supportFragmentManager.beginTransaction()
             .replace(R.id.container, SettingsFragment.newInstance())
-            .commitNow()
+            .setReorderingAllowed(true)
+            .addToBackStack(SettingsFragment::class.java.simpleName)
+            .commit()
         return true
+    }
+
+    override fun onBackPressed() {
+        if (supportFragmentManager.backStackEntryCount > 1) supportFragmentManager.popBackStack()
+        else super.onBackPressed()
     }
 }
 
 
 /*const val TAG = "StepCounter"
 
-*//**
+*/
+/**
  * This enum is used to define actions that can be performed after a successful sign in to Fit.
  * One of these values is passed to the Fit sign-in, and returned in a successful callback, allowing
  * subsequent execution of the desired action.
@@ -55,7 +65,8 @@ enum class FitActionRequestCode {
     READ_DATA
 }
 
-*//**
+*/
+/**
  * This sample demonstrates combining the Recording API and History API of the Google Fit platform
  * to record steps, and display the daily current step count. It also demonstrates how to
  * authenticate a user with Google Play Services.
@@ -87,12 +98,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    *//**
-     * Checks that the user is signed in, and if so, executes the specified function. If the user is
-     * not signed in, initiates the sign in flow, specifying the post-sign in function to execute.
-     *
-     * @param requestCode The request code corresponding to the action to perform after sign in.
-     *//*
+    */
+/**
+ * Checks that the user is signed in, and if so, executes the specified function. If the user is
+ * not signed in, initiates the sign in flow, specifying the post-sign in function to execute.
+ *
+ * @param requestCode The request code corresponding to the action to perform after sign in.
+ *//*
     private fun fitSignIn(requestCode: FitActionRequestCode) {
         if (oAuthPermissionsApproved()) {
             performActionForRequestCode(requestCode)
@@ -106,9 +118,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    *//**
-     * Handles the callback from the OAuth sign in flow, executing the post sign in function
-     *//*
+    */
+/**
+ * Handles the callback from the OAuth sign in flow, executing the post sign in function
+ *//*
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -123,13 +136,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    *//**
-     * Runs the desired method, based on the specified request code. The request code is typically
-     * passed to the Fit sign-in flow, and returned with the success callback. This allows the
-     * caller to specify which method, post-sign-in, should be called.
-     *
-     * @param requestCode The code corresponding to the action to perform.
-     *//*
+    */
+/**
+ * Runs the desired method, based on the specified request code. The request code is typically
+ * passed to the Fit sign-in flow, and returned with the success callback. This allows the
+ * caller to specify which method, post-sign-in, should be called.
+ *
+ * @param requestCode The code corresponding to the action to perform.
+ *//*
     private fun performActionForRequestCode(requestCode: FitActionRequestCode) = when (requestCode) {
         FitActionRequestCode.READ_DATA -> readData()
         FitActionRequestCode.SUBSCRIBE -> subscribe()
@@ -147,15 +161,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun oAuthPermissionsApproved() = GoogleSignIn.hasPermissions(getGoogleAccount(), fitnessOptions)
 
-    *//**
-     * Gets a Google account for use in creating the Fitness client. This is achieved by either
-     * using the last signed-in account, or if necessary, prompting the user to sign in.
-     * `getAccountForExtension` is recommended over `getLastSignedInAccount` as the latter can
-     * return `null` if there has been no sign in before.
-     *//*
+    */
+/**
+ * Gets a Google account for use in creating the Fitness client. This is achieved by either
+ * using the last signed-in account, or if necessary, prompting the user to sign in.
+ * `getAccountForExtension` is recommended over `getLastSignedInAccount` as the latter can
+ * return `null` if there has been no sign in before.
+ *//*
     private fun getGoogleAccount() = GoogleSignIn.getAccountForExtension(this, fitnessOptions)
 
-    *//** Records step data by requesting a subscription to background step data.  *//*
+    */
+/** Records step data by requesting a subscription to background step data.  *//*
     private fun subscribe() {
         // To create a subscription, invoke the Recording API. As soon as the subscription is
         // active, fitness data will start recording.
@@ -170,10 +186,11 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    *//**
-     * Reads the current daily step total, computed from midnight of the current day on the device's
-     * current timezone.
-     *//*
+    */
+/**
+ * Reads the current daily step total, computed from midnight of the current day on the device's
+ * current timezone.
+ *//*
     private fun readData() {
         *//*Fitness.getHistoryClient(this, getGoogleAccount())
             .readDailyTotal(DataType.TYPE_STEP_COUNT_DELTA)

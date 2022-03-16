@@ -38,6 +38,17 @@ object DateHelper {
         return zdtStartOfBefore.toEpochSecond()
     }
 
+
+    fun Long.isSameDay(other: Long): Boolean{
+        val thisDate = Date(this).toInstant()
+            .atZone(getSystemZone())
+            .toLocalDate()
+        val otherDate = Date(other).toInstant()
+            .atZone(getSystemZone())
+            .toLocalDate()
+        return thisDate.isEqual(otherDate)
+    }
+
     /**
      * Returns the start of the last specified day of the Week. For example, if 3 (Wednesday) is supplied as an
      * argument, then the start of the last Wedensday is returned. If today is Wendesday, start of today is returned
@@ -71,6 +82,10 @@ object DateHelper {
 
     fun timeToDateTimeString(time: Long, tu: TimeUnit = TimeUnit.MILLISECONDS): String{
         return convertTimeStampToDateString(time, "dd.MM.yyy HH:mm:ss", tu)
+    }
+
+    fun timeToSimpleDateString(time: Long, tu: TimeUnit = TimeUnit.MILLISECONDS): String {
+        return convertTimeStampToDateString(time, "E dd.MM", tu)
     }
 
     private fun convertTimeStampToDateString(time: Long, pattern: String, tu: TimeUnit): String{

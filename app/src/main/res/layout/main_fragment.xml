@@ -34,6 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/text_margin_inapp"
                 android:textSize="@dimen/text_size_inapp"
+                android:visibility="gone"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/step_progress_view" />
 
@@ -45,6 +46,13 @@
                 android:textSize="@dimen/text_size_inapp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/text_view_days_list" />
+
+            <androidx.compose.ui.platform.ComposeView
+                android:id="@+id/compose_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/text_view_stats"/>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
