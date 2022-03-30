@@ -61,12 +61,12 @@ class GoogleFitCommunicator(
         Fitness.getHistoryClient(context, getGoogleAccountStatic())
             .readData(readRequest)
             .addOnSuccessListener { cyclingResponse ->
-                Log.e(TAG, "Cycling data was read")//
+                Log.i(TAG, "Cycling data was read")
                 val result = parseGoogleFitCyclingResponse(cyclingResponse)
                 it.resumeWith(Result.success(result))
             }
             .addOnFailureListener { e ->
-                Log.e(TAG, "Cycling data was not read: $e")
+                Log.w(TAG, "Cycling data was not read: $e")
                 it.resumeWith(Result.failure(e))
             }
     }
@@ -188,34 +188,18 @@ class GoogleFitCommunicator(
     private fun parseGoogleFitCyclingResponse(cyclingResponse: DataReadResponse): List<CyclingUnit> {
         if (cyclingResponse.buckets.isNullOrEmpty()) return emptyList()
         val result = mutableListOf<CyclingUnit>()
-        //printData(cyclingResponse)
-//        for (bucket in cyclingResponse.buckets) {
-//            if (bucket.activity != "biking") continue
-//            bucket.dataSets.forEachIndexed { index, dataSet ->
-//                Log.d(CYCLING_TAG, "dataSetIndex: $index")
-//                Log.d(CYCLING_TAG, "dataSetType: ${dataSet.dataType}")
-//                Log.d(CYCLING_TAG, "dataSetSource: ${dataSet.dataSource}")
-//                Log.d(CYCLING_TAG, "dataSetPoints: ${dataSet.dataPoints}")
-//                val test = dataSet.dataPoints[0]
-//                val type = test.dataType
-//                Log.d(CYCLING_TAG, "DataPoint Type: $type")
-//                val value = test.getValue(Field.FIELD_DISTANCE).asFloat()
-//                Log.d(CYCLING_TAG, "DataPoint Value: $value")
-//                val timestamp = test.getTimestamp(TimeUnit.MILLISECONDS)
-//                val readableDate = timeToDateTimeString(timestamp)
-//                Log.d(CYCLING_TAG, "Date for cyclingdata: $readableDate")
-//            }
-//        }
+
         for (bucket in cyclingResponse.buckets) {
             if (bucket.activity != "biking") continue
-            bucket.dataSets.forEachIndexed { index, dataSet ->
-                val test = dataSet.dataPoints[0]
-                val type = test.dataType
-                Log.d(CYCLING_TAG, "DataPoint Type: $type")
-                val value = test.getValue(Field.FIELD_DISTANCE).asFloat()
-                Log.d(CYCLING_TAG, "DataPoint Value: $value")
-                val timestamp = test.getTimestamp(TimeUnit.MILLISECONDS)
-                result.add(CyclingUnit(timestamp, value))
+            bucket.dataSets.forEachIndexed { _, dataSet ->
+
+                dataSet.dataPoints.forEach { dataPoint ->
+                    val type = dataPoint.dataType
+                    val value = dataPoint.getValue(Field.FIELD_DISTANCE).asFloat()
+                    val timestamp = dataPoint.getTimestamp(TimeUnit.MILLISECONDS)
+                    Log.i(CYCLING_TAG, "Datapoint type: ${type.name} -- value: $value -- ${DateHelper.timeToDateTimeString(timestamp, TimeUnit.SECONDS)}")
+                    result.add(CyclingUnit(timestamp, value))
+                }
             }
         }
         return result
@@ -225,11 +209,11 @@ class GoogleFitCommunicator(
         val endTime = DateHelper.getNow()
         val startTime = DateHelper.getStartOfSpecifiedDay(7)
         Log.i(
-            TAG, "Range Start: ${DateHelper.timeToDateTimeString(startTime, TimeUnit.SECONDS)}"
+            TAG, "Cycling Range Start: ${DateHelper.timeToDateTimeString(startTime, TimeUnit.SECONDS)}"
         )
         Log.i(
             TAG,
-            "Range End: ${DateHelper.timeToDateTimeString(endTime, TimeUnit.SECONDS)}"
+            "Cycling Range End: ${DateHelper.timeToDateTimeString(endTime, TimeUnit.SECONDS)}"
         )
 
         val dataSource = DataSource.Builder()
@@ -279,7 +263,7 @@ class GoogleFitCommunicator(
     }
 
     companion object {
-        private const val TAG = "GFit"
+        private const val TAG = "Fitness Repository"
         private const val CYCLING_TAG = "Cycling"
     }
 }

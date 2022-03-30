@@ -37,14 +37,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // account verification needed
 
     fun getData(startDayOfWeek: Int) {
-//        googleFitCommunicator.accessGoogleFitStatic(
-//            startDayOfWeek,
-//            successFunction = {
-//                statistics = it
-//                _loadingDone.value = true
-//                // TODO add function to update app Widgets
-//                callBackCreator(getApplication()).invoke(it)
-//            })
         viewModelScope.launch {
             googleFitCommunicator.accessGoogleFit(
                 startDayOfWeek,

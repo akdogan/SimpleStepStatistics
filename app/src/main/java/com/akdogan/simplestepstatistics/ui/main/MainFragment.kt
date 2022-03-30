@@ -10,13 +10,14 @@ import android.view.ViewGroup
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
@@ -26,11 +27,12 @@ import com.akdogan.simplestepstatistics.databinding.MainFragmentBinding
 import com.akdogan.simplestepstatistics.helper.DateHelper.timeToSimpleDateString
 import com.akdogan.simplestepstatistics.helper.formatDays
 import com.akdogan.simplestepstatistics.helper.formatStats
-import com.akdogan.simplestepstatistics.helper.toKmRounded
+import com.akdogan.simplestepstatistics.helper.toKmString
 import com.akdogan.simplestepstatistics.repository.DataStoreRepository
 import com.akdogan.simplestepstatistics.repository.GoogleFitCommunicator
 import com.akdogan.simplestepstatistics.repository.StepStatisticDay
 import com.akdogan.simplestepstatistics.repository.totalSteps
+import com.akdogan.simplestepstatistics.ui.theme.StepStatisticsTheme
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 
 class MainFragment : Fragment() {
@@ -58,7 +60,7 @@ class MainFragment : Fragment() {
         localBinding.composeList.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MaterialTheme {
+                StepStatisticsTheme {
                     StepsItemList(viewModel)
                 }
             }
@@ -71,9 +73,9 @@ class MainFragment : Fragment() {
     fun StepsItemList(
         viewModel: MainViewModel
 //        dataSet: List<StepStatisticDay>
-    ){
+    ) {
         val data: List<StepStatisticDay> by viewModel.liveStatistics.observeAsState(listOf<StepStatisticDay>())
-        Column{
+        Column {
             data.forEach {
                 if (it.cycledDistance == null) {
                     StepsListElement(item = it)
@@ -109,41 +111,43 @@ class MainFragment : Fragment() {
 
     @Composable
     fun StepsListElement(item: StepStatisticDay) {
-        Row(modifier = Modifier.padding(start = 32.dp, top = 16.dp)) {
-            Column {
-                Text(timeToSimpleDateString(item.date))
-            }
-            Column(modifier = Modifier.padding(start = 18.dp)) {
-                Text(item.totalSteps().toString())
+        Surface {
+            Row(modifier = Modifier.padding(start = 32.dp, top = 16.dp)) {
+                Column {
+                    Text(fontWeight = FontWeight.Bold, text = timeToSimpleDateString(item.date))
+                }
+                Column(modifier = Modifier.padding(start = 18.dp)) {
+                    Text(fontWeight = FontWeight.Bold, text = item.totalSteps().toString())
+                }
             }
         }
     }
 
-
     @Composable
     fun StepsListElementWithCycling(item: StepStatisticDay) {
-
-        Row(modifier = Modifier.padding(start = 32.dp, top = 16.dp)) {
-            Column {
-                Row {
-                    Text(timeToSimpleDateString(item.date))
+        Surface {
+            Row(modifier = Modifier.padding(start = 32.dp, top = 16.dp)) {
+                Column {
+                    Row {
+                        Text(fontWeight = FontWeight.Bold, text = timeToSimpleDateString(item.date))
+                    }
+                    Row(modifier = Modifier.padding(start = 12.dp)) {
+                        Text("Steps")
+                    }
+                    Row(modifier = Modifier.padding(start = 12.dp)) {
+                        Text("Biked km")
+                    }
                 }
-                Row(modifier = Modifier.padding(start = 12.dp)) {
-                    Text("Steps")
-                }
-                Row(modifier = Modifier.padding(start = 12.dp)) {
-                    Text("Biked km")
-                }
-            }
-            Column {
-                Row(modifier = Modifier.padding(start = 18.dp)) {
-                    Text(item.totalSteps().toString())
-                }
-                Row(modifier = Modifier.padding(start = 18.dp)) {
-                    Text(item.steps.toString())
-                }
-                Row(modifier = Modifier.padding(start = 18.dp)) {
-                    Text(item.cycledDistance?.toKmRounded().toString())
+                Column {
+                    Row(modifier = Modifier.padding(start = 18.dp)) {
+                        Text(fontWeight = FontWeight.Bold, text = item.totalSteps().toString())
+                    }
+                    Row(modifier = Modifier.padding(start = 18.dp)) {
+                        Text(item.steps.toString())
+                    }
+                    Row(modifier = Modifier.padding(start = 18.dp)) {
+                        Text(item.cycledDistance?.toKmString() ?: "0")
+                    }
                 }
             }
         }

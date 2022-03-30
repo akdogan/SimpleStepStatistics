@@ -39,14 +39,22 @@ class StepStatisticModel(
     }
 
     fun addCyclingDay(date: Long, cycledDistance: Float?) {
+        if (cycledDistance == null) return
         val existingItem = dataSet.find { date.isSameDay(it.date)}
         if (existingItem == null){
             dataSet.add(StepStatisticDay(date, 0, cycledDistance))
         } else {
             dataSet.remove(existingItem)
-            dataSet.add(existingItem.copy(cycledDistance = cycledDistance))
+            dataSet.add(existingItem.addCyclingDistanceIfNotNull(cycledDistance))
         }
         dataSet.sortBy { it.date }
+    }
+
+    fun StepStatisticDay.addCyclingDistanceIfNotNull(distanceToAdd: Float?): StepStatisticDay {
+        var combinedDistance: Float = 0f
+        if (this.cycledDistance != null) combinedDistance =+ this.cycledDistance
+        if (distanceToAdd != null) combinedDistance += distanceToAdd
+        return this.copy(cycledDistance = combinedDistance)
     }
 
     fun getTotalStepCount(): Int {
