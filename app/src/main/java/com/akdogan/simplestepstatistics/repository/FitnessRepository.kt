@@ -207,7 +207,7 @@ class GoogleFitCommunicator(
 
     private fun createFitnessDataBicycleRequest(startDayOfWeek: Int): DataReadRequest {
         val endTime = DateHelper.getNow()
-        val startTime = DateHelper.getStartOfSpecifiedDay(7)
+        val startTime = DateHelper.getStartOfSpecifiedDay(startDayOfWeek)
         Log.i(
             TAG, "Cycling Range Start: ${DateHelper.timeToDateTimeString(startTime, TimeUnit.SECONDS)}"
         )

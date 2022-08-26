@@ -32,6 +32,7 @@ import com.akdogan.simplestepstatistics.repository.DataStoreRepository
 import com.akdogan.simplestepstatistics.repository.GoogleFitCommunicator
 import com.akdogan.simplestepstatistics.repository.StepStatisticDay
 import com.akdogan.simplestepstatistics.repository.totalSteps
+import com.akdogan.simplestepstatistics.ui.runAnimation
 import com.akdogan.simplestepstatistics.ui.theme.StepStatisticsTheme
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 
@@ -193,7 +194,7 @@ class MainFragment : Fragment() {
                         setGoal(viewModel.goal)
                         setProgress(viewModel.getTotal())
                         visibility = View.VISIBLE
-//                        runAnimation()
+                        runAnimation()
                     }
 
                     // Stop Swipe To Refresh Animation if it is running
