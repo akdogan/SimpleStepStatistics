@@ -1,6 +1,7 @@
 package com.akdogan.simplestepstatistics.repository
 
 import com.akdogan.simplestepstatistics.helper.DateHelper
+import com.akdogan.simplestepstatistics.helper.DateHelper.isSameDay
 import kotlin.math.roundToInt
 
 fun createSampleData(goal: Int, daysInPeriod: Int, days: Int = 4): StepStatisticModel{
@@ -8,7 +9,10 @@ fun createSampleData(goal: Int, daysInPeriod: Int, days: Int = 4): StepStatistic
     repeat(days){
         val day = DateHelper.getStartOfPastDay(it + 1)
         val steps = (4500..9500).random()
-        result.addDay(day, steps)
+        val cycledDistance = if ((0..2).random() == 2){
+            (1..7).random().toFloat()
+        } else null
+        result.addDay(day, steps, cycledDistance)
     }
     return result
 }
@@ -18,6 +22,10 @@ class StepStatisticModel(
     private val daysInPeriod: Int
 ) {
     private val dataSet = mutableListOf<StepStatisticDay>()
+
+    val dataList: List<StepStatisticDay>
+        get() = dataSet.toList()
+
     private val dailyGoal = goal.toDouble() / daysInPeriod.toDouble()
 
     /**
@@ -25,13 +33,32 @@ class StepStatisticModel(
      * @param date Date of the day in Milliseconds since Epoch
      * @param stepCount Number of Steps taken that day
      */
-    fun addDay(date: Long, stepCount: Int){
-        dataSet.add(StepStatisticDay(date, stepCount))
+    fun addDay(date: Long, stepCount: Int, cycledDistance: Float? = null){
+        dataSet.add(StepStatisticDay(date, stepCount, cycledDistance))
         dataSet.sortBy { it.date }
     }
 
+    fun addCyclingDay(date: Long, cycledDistance: Float?) {
+        if (cycledDistance == null) return
+        val existingItem = dataSet.find { date.isSameDay(it.date)}
+        if (existingItem == null){
+            dataSet.add(StepStatisticDay(date, 0, cycledDistance))
+        } else {
+            dataSet.remove(existingItem)
+            dataSet.add(existingItem.addCyclingDistanceIfNotNull(cycledDistance))
+        }
+        dataSet.sortBy { it.date }
+    }
+
+    fun StepStatisticDay.addCyclingDistanceIfNotNull(distanceToAdd: Float?): StepStatisticDay {
+        var combinedDistance: Float = 0f
+        if (this.cycledDistance != null) combinedDistance =+ this.cycledDistance
+        if (distanceToAdd != null) combinedDistance += distanceToAdd
+        return this.copy(cycledDistance = combinedDistance)
+    }
+
     fun getTotalStepCount(): Int {
-        return dataSet.sumBy { it.steps }
+        return dataSet.sumBy { it.totalSteps() }
     }
 
     private fun getDiffToWeeklyGoal(): Int {
@@ -77,13 +104,26 @@ class StepStatisticModel(
 
 }
 
+data class CyclingUnit(
+    val date: Long,
+    val cycledDistance: Float
+)
 
 data class StepStatisticDay(
     val date: Long,
-    val steps: Int
+    val steps: Int,
+    val cycledDistance: Float? = null
 ) {
 
     override fun toString(): String{
-        return "${DateHelper.timeToDateString(date)} Stepcount $steps"
+        return "${DateHelper.timeToDateString(date)} Stepcount $steps :: CycledDistance $cycledDistance"
     }
+}
+
+fun StepStatisticDay.totalSteps(): Int {
+    var result = steps
+    if (cycledDistance != null) {
+        result += (cycledDistance * 1.5).toInt()
+    }
+    return result //if (cycledDistance == null) steps else (cycledDistance * 1500).toInt() + steps
 }

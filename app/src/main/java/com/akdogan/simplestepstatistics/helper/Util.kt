@@ -9,8 +9,7 @@ import com.google.android.gms.fitness.result.DataReadResponse
 import java.util.concurrent.TimeUnit
 
 
-
-
+fun Float.toKmString() = String.format("%.1f", (this / 1000))
 
 fun formatTotalWithGoal(goal: Int, total: Int, res: Resources): String{
     return res.getString(R.string.total_goal, total, goal)

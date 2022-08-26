@@ -11,9 +11,14 @@ import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataSource
 import com.google.android.gms.fitness.data.DataType
+import com.google.android.gms.fitness.data.Field
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.suspendCoroutine
 
 class GoogleFitCommunicator(
     private val context: Context,
@@ -21,7 +26,6 @@ class GoogleFitCommunicator(
     private val daysInPeriod: Int = FALLBACK_DAYS_IN_PERIOD
 ) {
 
-    val TAG = "GFit"
 
     /**
      * Checks if the application has access to Google fit for the defined statistics
@@ -33,10 +37,71 @@ class GoogleFitCommunicator(
         return (GoogleSignIn.hasPermissions(gAccount, options))
     }
 
+    private suspend fun getStepStatistics(readRequest: DataReadRequest): StepStatisticModel = suspendCoroutine {
+        Fitness.getHistoryClient(context, getGoogleAccountStatic())
+            .readData(readRequest)
+            .addOnSuccessListener { dataReadResponse ->
+                // When parsing fails, sample data is used instead
+                val result = try {
+                    parseGoogleFitResponseStatic(dataReadResponse)
+                } catch (e: Exception) {
+                    Log.e("GOOGLE FIT PARSER", e.stackTraceToString())
+                    createSampleData(weeklyGoal, daysInPeriod)
+                }
+//                    successFunction(result)
+                it.resumeWith(Result.success(result))
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "There was a problem reading the data.", e)
+                it.resumeWith(Result.failure(e))
+            }
+    }
+
+    private suspend fun getCyclingData(readRequest: DataReadRequest): List<CyclingUnit> = suspendCoroutine {
+        Fitness.getHistoryClient(context, getGoogleAccountStatic())
+            .readData(readRequest)
+            .addOnSuccessListener { cyclingResponse ->
+                Log.i(TAG, "Cycling data was read")
+                val result = parseGoogleFitCyclingResponse(cyclingResponse)
+                it.resumeWith(Result.success(result))
+            }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Cycling data was not read: $e")
+                it.resumeWith(Result.failure(e))
+            }
+    }
+
+    suspend fun accessGoogleFit(
+        startDayOfWeek: Int,
+        successFunction: (StepStatisticModel) -> Unit,
+        completeFunction: () -> Unit = {}
+    ) = withContext(Dispatchers.IO) {
+        Log.i(TAG, "access granted")
+        val readRequest = createFitnessDataRequestStatic(startDayOfWeek)
+
+        // Invoke the History API to fetch the data with the query
+        val statisticsStepStatisticModel = async {
+            getStepStatistics(readRequest)
+        }.await()
+
+        val cyclingReadRequest = createFitnessDataBicycleRequest(startDayOfWeek)
+
+        val cyclingData = async {
+            getCyclingData(cyclingReadRequest)
+        }.await()
+
+        cyclingData.forEach {
+            statisticsStepStatisticModel.addCyclingDay(it.date, it.cycledDistance)
+        }
+
+        successFunction(statisticsStepStatisticModel)
+    }
+
     /**
      * Fetch Data from Google Fit
      * @param successFunction CallbackFunction that should be executed with the resultdata
      */
+    @Deprecated("Use suspend function instead")
     fun accessGoogleFitStatic(
         startDayOfWeek: Int,
         successFunction: (StepStatisticModel) -> Unit,
@@ -65,13 +130,30 @@ class GoogleFitCommunicator(
                 completeFunction()
             }
 
+        val cyclingReadRequest = createFitnessDataBicycleRequest(startDayOfWeek)
+
+        Fitness.getHistoryClient(context, getGoogleAccountStatic())
+            .readData(cyclingReadRequest)
+            .addOnSuccessListener { cyclingResponse ->
+                Log.e(TAG, "Cycling data was read")//
+                parseGoogleFitCyclingResponse(cyclingResponse)
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Cycling data was not read: $e")
+            }
+
     }
 
     fun getFitnessOptions(): FitnessOptions {
         return FitnessOptions.builder()
             .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
             .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.AGGREGATE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.AGGREGATE_ACTIVITY_SUMMARY, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_ACTIVITY_SEGMENT, FitnessOptions.ACCESS_READ)
+            .addDataType(DataType.TYPE_DISTANCE_DELTA, FitnessOptions.ACCESS_READ)
             .build()
+        // TODO add cycling options if necessary
     }
 
     fun getGoogleAccountStatic(
@@ -103,21 +185,52 @@ class GoogleFitCommunicator(
         return statistics
     }
 
-//    private fun createFitnessDataBicycleRequest(): DataReadRequest {
-//        val endTime = DateHelper.getNow()
-//        val startTime = DateHelper.getStartOfSpecifiedDay(6)
-//        Log.i(
-//            TAG, "Range Start: ${DateHelper.timeToDateTimeString(startTime, TimeUnit.SECONDS)}"
-//        )
-//        Log.i(
-//            TAG,
-//            "Range End: ${DateHelper.timeToDateTimeString(endTime, TimeUnit.SECONDS)}"
-//        )
-//
-//        val dataSource = DataSource.Builder()
-//            .setAppPackageName("com.google.android.gms")
-//            .setDataType(DataType.AGGREGATE_DISTANCE_DELTA)
-//    }
+    private fun parseGoogleFitCyclingResponse(cyclingResponse: DataReadResponse): List<CyclingUnit> {
+        if (cyclingResponse.buckets.isNullOrEmpty()) return emptyList()
+        val result = mutableListOf<CyclingUnit>()
+
+        for (bucket in cyclingResponse.buckets) {
+            if (bucket.activity != "biking") continue
+            bucket.dataSets.forEachIndexed { _, dataSet ->
+
+                dataSet.dataPoints.forEach { dataPoint ->
+                    val type = dataPoint.dataType
+                    val value = dataPoint.getValue(Field.FIELD_DISTANCE).asFloat()
+                    val timestamp = dataPoint.getTimestamp(TimeUnit.MILLISECONDS)
+                    Log.i(CYCLING_TAG, "Datapoint type: ${type.name} -- value: $value -- ${DateHelper.timeToDateTimeString(timestamp, TimeUnit.SECONDS)}")
+                    result.add(CyclingUnit(timestamp, value))
+                }
+            }
+        }
+        return result
+    }
+
+    private fun createFitnessDataBicycleRequest(startDayOfWeek: Int): DataReadRequest {
+        val endTime = DateHelper.getNow()
+        val startTime = DateHelper.getStartOfSpecifiedDay(startDayOfWeek)
+        Log.i(
+            TAG, "Cycling Range Start: ${DateHelper.timeToDateTimeString(startTime, TimeUnit.SECONDS)}"
+        )
+        Log.i(
+            TAG,
+            "Cycling Range End: ${DateHelper.timeToDateTimeString(endTime, TimeUnit.SECONDS)}"
+        )
+
+        val dataSource = DataSource.Builder()
+            .setAppPackageName("com.google.android.gms")
+            .setDataType(DataType.AGGREGATE_DISTANCE_DELTA)
+            .setType(DataSource.TYPE_DERIVED)
+            .setStreamName("cycled_distance")
+            .build()
+
+        return DataReadRequest.Builder()
+            //.aggregate(dataSource)
+            .aggregate(DataType.TYPE_DISTANCE_DELTA)
+            //.bucketByTime(1, TimeUnit.DAYS)
+            .bucketByActivitySegment(1, TimeUnit.MINUTES)
+            .setTimeRange(startTime, endTime, TimeUnit.SECONDS)
+            .build()
+    }
 
     private fun createFitnessDataRequestStatic(startDayOfWeek: Int): DataReadRequest {
         val endTime = DateHelper.getNow()
@@ -147,5 +260,10 @@ class GoogleFitCommunicator(
             .bucketByTime(1, TimeUnit.DAYS)
             .setTimeRange(startTime, endTime, TimeUnit.SECONDS)
             .build()
+    }
+
+    companion object {
+        private const val TAG = "Fitness Repository"
+        private const val CYCLING_TAG = "Cycling"
     }
 }
