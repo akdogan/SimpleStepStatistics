@@ -73,7 +73,6 @@ class MainFragment : Fragment() {
     @Composable
     fun StepsItemList(
         viewModel: MainViewModel
-//        dataSet: List<StepStatisticDay>
     ) {
         val data: List<StepStatisticDay> by viewModel.liveStatistics.observeAsState(listOf<StepStatisticDay>())
         Column {
@@ -179,8 +178,7 @@ class MainFragment : Fragment() {
             getGoogleFitData(startDayOfWeek)
         }
 
-
-        viewModel.loadingDone.observe(viewLifecycleOwner, {
+        viewModel.loadingDone.observe(viewLifecycleOwner) {
             if (it == true) {
                 val res = requireContext().resources
                 binding?.apply {
@@ -203,7 +201,7 @@ class MainFragment : Fragment() {
                     }
                 }
             }
-        })
+        }
         //statsView.setBackgroundColor(retrieveThemeColor(requireActivity()))
 
     }
@@ -212,7 +210,6 @@ class MainFragment : Fragment() {
         binding = null
         super.onDestroyView()
     }
-
 
     private fun requestOauthFit(startDayOfWeek: Int) {
         GoogleFitCommunicator(requireContext()).also {
@@ -231,6 +228,7 @@ class MainFragment : Fragment() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.i(
             TAG,
@@ -249,7 +247,6 @@ class MainFragment : Fragment() {
             }
         }
     }
-
 
     private fun getGoogleFitData(startDayOfWeek: Int) {
         viewModel.getData(startDayOfWeek)
