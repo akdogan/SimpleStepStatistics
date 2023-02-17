@@ -90,7 +90,7 @@ object DateHelper {
 
     private fun convertTimeStampToDateString(time: Long, pattern: String, tu: TimeUnit): String{
         val targetTime = TimeUnit.MILLISECONDS.convert(time, tu)
-        val date = Date(time)
+        val date = Date(targetTime)
         val formatter: DateFormat = SimpleDateFormat(pattern)
         formatter.timeZone = TimeZone.getDefault()
         return formatter.format(date)
