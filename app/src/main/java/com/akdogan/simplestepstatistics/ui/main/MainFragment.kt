@@ -180,7 +180,7 @@ class MainFragment : Fragment() {
         }
 
 
-        viewModel.loadingDone.observe(viewLifecycleOwner, {
+        viewModel.loadingDone.observe(viewLifecycleOwner) {
             if (it == true) {
                 val res = requireContext().resources
                 binding?.apply {
@@ -203,7 +203,7 @@ class MainFragment : Fragment() {
                     }
                 }
             }
-        })
+        }
         //statsView.setBackgroundColor(retrieveThemeColor(requireActivity()))
 
     }

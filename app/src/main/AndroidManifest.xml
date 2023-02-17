@@ -18,7 +18,8 @@
 
 
         <activity android:name=".ui.main.MainActivity"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,7 +27,8 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".widget.StatisticsAppWidgetProvider">
+        <receiver android:name=".widget.StatisticsAppWidgetProvider"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

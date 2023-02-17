@@ -9,8 +9,8 @@ android {
 
     defaultConfig {
         applicationId "com.akdogan.simplestepstatistics"
-        minSdkVersion 28
-        targetSdkVersion 30
+        minSdkVersion 29
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
 
@@ -72,8 +72,8 @@ dependencies {
 
 
 
-    implementation 'com.google.android.gms:play-services-fitness:20.0.0'
-    implementation 'com.google.android.gms:play-services-auth:19.2.0'
+    implementation 'com.google.android.gms:play-services-fitness:21.1.0'
+    implementation 'com.google.android.gms:play-services-auth:20.4.1'
 
 
 
